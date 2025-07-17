@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './HomePage';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
@@ -14,7 +14,7 @@ import AdminDashboard from './AdminDashboard';
 const App = () => {
   return (
     <Router>
-      <Switch>
+      <Routes>
         <Route path="/" exact component={HomePage} /> // Home page route
         <Route path="/login" component={LoginPage} /> // Login page route
         <Route path="/register" component={RegisterPage} /> // Registration page route
@@ -24,7 +24,7 @@ const App = () => {
         <Route path="/buyer-dashboard" component={BuyerDashboard} /> // Buyer dashboard route
         <Route path="/seller-dashboard" component={SellerDashboard} /> // Seller dashboard route
         <Route path="/admin-dashboard" component={AdminDashboard} /> // Admin dashboard route
-      </Switch>
+      </Routes>
     </Router>
   );
 };
