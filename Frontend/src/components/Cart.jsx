@@ -21,7 +21,7 @@ const Cart = () => {
           ))}
         </ul>
       )}
-      <button>Checkout</button> // Button to proceed to checkout
+      <button>Checkout</button> 
     </div>
   );
 };

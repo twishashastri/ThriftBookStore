@@ -7,7 +7,7 @@ const BuyerDashboard = () => {
       <h2>Buyer Dashboard</h2>
       <p>Welcome to your dashboard! Here you can view your orders and manage your account.</p>
       <a href="/browse">Browse Books</a> // Link to browse books
-      <a href="/cart">View Cart</a> // Link to view shopping cart
+      <a href="/cart">View Cart</a>  //Link to view shopping cart
     </div>
   );
 };
