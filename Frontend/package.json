@@ -1,15 +1,16 @@
 {
   "name": "frontend",
   "version": "1.0.0",
+  "description": "Frontend for ThriftBookStore project",
   "main": "index.js",
   "scripts": {
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "proxy": "http://localhost:5000",
+  "keywords": [],
   "dependencies": {
     "axios": "^1.10.0",
     "react": "^19.1.0",
