@@ -1,12 +1,35 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Login with:', { email, password });
+    try {
+      const res = await axios.post('/api/auth/login', { email, password });
+      const { token, role, username } = res.data;
+
+      // Optional: Store token in localStorage or sessionStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+      localStorage.setItem('username', username);
+
+      alert(` Welcome ${username}! Redirecting to your dashboard...`);
+
+      // Redirect based on role
+      if (role === 'admin') {
+        window.location.href = '/admin-dashboard';
+      } else if (role === 'seller') {
+        window.location.href = '/seller-dashboard';
+      } else {
+        window.location.href = '/buyer-dashboard';
+      }
+    } catch (error) {
+      console.error('Login error:', error.response?.data || error.message);
+      alert(`Login failed: ${error.response?.data?.message || 'Invalid credentials'}`);
+    }
   };
 
   return (

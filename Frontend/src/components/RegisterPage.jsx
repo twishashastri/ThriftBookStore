@@ -5,15 +5,17 @@ const RegisterPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('buyer');
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/auth/register', { username, email, password });
-      alert('Registration successful!');
+      await axios.post('/api/auth/register', { username, email, password, role });
+      alert('🎉 Registration successful!');
       window.location.href = '/login';
     } catch (error) {
-      alert('Registration failed!');
+      console.error('Registration error:', error.response?.data || error.message);
+      alert(`Registration failed: ${error.response?.data?.message || 'Unknown error'}`);
     }
   };
 
@@ -47,12 +49,23 @@ const RegisterPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             style={styles.input}
           />
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+            style={styles.input}
+          >
+            <option value="buyer">Customer</option>
+            <option value="seller">Seller</option>
+            <option value="admin">Admin</option>
+          </select>
           <button type="submit" style={styles.button}>
             Register
           </button>
         </form>
         <p style={styles.footerText}>
-          Already have an account? <a href="/login" style={styles.link}>Login</a>
+          Already have an account?{' '}
+          <a href="/login" style={styles.link}>Login</a>
         </p>
       </div>
     </div>
