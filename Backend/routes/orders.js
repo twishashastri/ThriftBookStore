@@ -1,53 +1,47 @@
-const express = require('express');
+const router = require('express').Router();
 const Order = require('../models/Order');
-const authMiddleware = require('../middleware/authMiddleware.js');
+const Book = require('../models/Book');
+const { protect, restrictTo } = require('../middleware/auth');
 
-const router = express.Router();
-
-// Place a new order (protected; buyer)
-router.post('/', authMiddleware, async (req, res) => {
+// Buyer: place order (body: items: [{bookId}])
+router.post('/', protect, restrictTo('buyer', 'admin'), async (req, res) => {
   try {
-    if (req.user.role !== 'buyer') return res.status(403).json({ message: 'Access denied' });
-
-    const { books, totalAmount } = req.body;
-
-    const order = new Order({
-      buyer: req.user.id,
-      books,
-      totalAmount,
-      status: 'Pending',
-    });
-
-    await order.save();
-
+    const items = await Promise.all(
+      (req.body.items || []).map(async ({ bookId }) => {
+        const book = await Book.findById(bookId).populate('seller');
+        if (!book || !book.isActive) throw new Error('Book unavailable');
+        return { book: book._id, price: book.price, seller: book.seller._id };
+      })
+    );
+    const order = await Order.create({ buyer: req.user._id, items });
     res.status(201).json(order);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to place order' });
+  } catch (e) {
+    res.status(400).json({ message: e.message });
   }
 });
 
-// Get orders for a user (buyer/seller/admin)
-router.get('/', authMiddleware, async (req, res) => {
-  try {
-    let orders;
-    if (req.user.role === 'buyer') {
-      orders = await Order.find({ buyer: req.user.id }).populate('books.book');
-    } else if (req.user.role === 'seller') {
-      // Seller sees orders of own books
-      // This requires querying orders containing books sold by seller - more complex logic
-      orders = await Order.find({}).populate('books.book buyer');
-      orders = orders.filter(order => 
-        order.books.some(b => b.book.seller.toString() === req.user.id)
-      );
-    } else if (req.user.role === 'admin') {
-      orders = await Order.find({}).populate('books.book buyer');
-    }
+// Buyer: my orders
+router.get('/me', protect, restrictTo('buyer', 'admin'), async (req, res) => {
+  const orders = await Order.find({ buyer: req.user._id })
+    .sort('-createdAt')
+    .populate('items.book', 'title author price')
+    .populate('items.seller', 'name');
+  res.json(orders);
+});
 
-    res.json(orders);
+// Seller: orders of my books
+router.get('/seller', protect, restrictTo('seller', 'admin'), async (req, res) => {
+  const orders = await Order.find({ 'items.seller': req.user._id })
+    .sort('-createdAt')
+    .populate('items.book', 'title author price')
+    .populate('buyer', 'name');
+  res.json(orders);
+});
 
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to load orders' });
-  }
+// Admin: all orders
+router.get('/', protect, restrictTo('admin'), async (_req, res) => {
+  const orders = await Order.find().sort('-createdAt');
+  res.json(orders);
 });
 
 module.exports = router;

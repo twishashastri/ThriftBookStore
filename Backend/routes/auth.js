@@ -1,49 +1,76 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
+const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { protect, restrictTo } = require('../middleware/auth');
 
-const router = express.Router();
+const signToken = (user) =>
+  jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
-// Route to register new users - hashes password before saving
+/** REGISTER */
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
-    // Hash password with bcrypt for security
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword, role });
-    await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Failed to register user' });
+    const { name, email, password, role } = req.body;
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const safeRole = ['buyer', 'seller', 'admin'].includes(role) ? role : 'buyer';
+
+    const exists = await User.findOne({ email: normalizedEmail });
+    if (exists) return res.status(400).json({ message: 'email already in use' });
+
+    const user = await User.create({
+      name,
+      email: normalizedEmail,
+      password,
+      role: safeRole
+    });
+
+    return res.status(201).json({
+      message: 'Registration successful! Please log in to continue.',
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (e) {
+    if (e && e.code === 11000) {
+      const field = Object.keys(e.keyPattern || {})[0] || 'field';
+      return res.status(400).json({ message: `${field} already in use` });
+    }
+    return res.status(500).json({ message: e.message });
   }
 });
 
-// Route to login users - compares passwords and returns JWT token
+/** LOGIN (returns token) */
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-    
-    // Compare submitted password with hashed password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) return res.status(401).json({ message: 'Invalid credentials' });
+    const normalizedEmail = String(email || '').toLowerCase().trim();
 
-    // Generate JWT token with user id and role
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    // ⬇️ Include password explicitly so bcrypt can compare
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
+    if (!user) return res.status(400).json({ message: 'Invalid email or password' });
 
-    // Return token to client
-    res.json({ token, username: user.username, role: user.role });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Login failed' });
+    const ok = await user.comparePassword(password);
+    if (!ok) return res.status(400).json({ message: 'Invalid email or password' });
+
+    const token = signToken(user);
+    return res.json({
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+});
+
+/** CURRENT USER */
+router.get('/me', protect, (req, res) => {
+  res.json({ user: req.user });
+});
+
+/** USERS COUNT (admin only) */
+router.get('/count', protect, restrictTo('admin'), async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.json({ count });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 });
 

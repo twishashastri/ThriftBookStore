@@ -1,15 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import api from './api';
 
-// BuyerDashboard component for buyer users to manage their account
-const BuyerDashboard = () => {
+export default function BuyerDashboard() {
+  const [orders, setOrders] = useState([]);
+  useEffect(() => { (async () => { const { data } = await api.get('/orders/me'); setOrders(data); })(); }, []);
   return (
     <div>
-      <h2>Buyer Dashboard</h2>
-      <p>Welcome to your dashboard! Here you can view your orders and manage your account.</p>
-      <a href="/browse">Browse Books</a> // Link to browse books
-      <a href="/cart">View Cart</a>  //Link to view shopping cart
+      <h2>My Orders</h2>
+      <pre>{JSON.stringify(orders, null, 2)}</pre>
     </div>
   );
-};
-
-export default BuyerDashboard;
+}

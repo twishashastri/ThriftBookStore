@@ -1,29 +1,20 @@
 import React from 'react';
+import api from './api';
 
-// Cart component to display items added to the shopping cart
-const Cart = () => {
-  // Placeholder for cart items, in a real app this would come from state or context
-  const cartItems = []; // Example empty cart
+export default function Cart() {
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+  const placeOrder = async () => {
+    const { data } = await api.post('/orders', { items: cart });
+    localStorage.removeItem('cart');
+    alert('Order placed #' + data._id);
+  };
 
   return (
     <div>
-      <h2>Your Shopping Cart</h2>
-      {cartItems.length === 0 ? (
-        <p>Your cart is empty.</p> // Message if cart is empty
-      ) : (
-        <ul>
-          {cartItems.map(item => (
-            <li key={item.id}>
-              <h3>{item.title}</h3>
-              <p>Price: ${item.price}</p>
-              <p>Quantity: {item.quantity}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-      <button>Checkout</button> 
+      <h2>Cart</h2>
+      <pre>{JSON.stringify(cart, null, 2)}</pre>
+      {cart.length ? <button onClick={placeOrder}>Place Order</button> : <p>No items.</p>}
     </div>
   );
-};
-
-export default Cart;
+}

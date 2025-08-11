@@ -1,33 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from './api';
+import { useAuth } from './AuthContext';
 
-// BrowseBooks component to display available books
-const BrowseBooks = () => {
-  const [books, setBooks] = useState([]); // State to hold books data
+export default function BrowseBooks() {
+  const [books, setBooks] = useState([]);
+  const [q, setQ] = useState('');
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      const response = await axios.get('/api/books'); // Fetch books from backend
-      setBooks(response.data); // Update state with fetched books
-    };
-    fetchBooks(); // Call fetch function
-  }, []);
+  const load = async () => {
+    const { data } = await api.get('/books', { params: q ? { q } : {} });
+    setBooks(data);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const addToCart = (book) => {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    cart.push({ bookId: book._id });
+    localStorage.setItem('cart', JSON.stringify(cart));
+    alert('Added to cart');
+  };
 
   return (
     <div>
-      <h2>Available Books</h2>
+      <h2>Browse Books</h2>
+      <input placeholder="Search title/author" value={q} onChange={(e) => setQ(e.target.value)} />
+      <button onClick={load}>Search</button>
       <ul>
-        {books.map(book => (
-          <li key={book._id}>
-            <h3>{book.title}</h3>
-            <p>Author: {book.author}</p>
-            <p>Price: ${book.price}</p>
-            <img src={book.imageUrl} alt={book.title} /> // Display book image
+        {books.map((b) => (
+          <li key={b._id} className="card">
+            <strong>{b.title}</strong> by {b.author} — ${b.price} ({b.condition})
+            <div>
+              {user?.role === 'buyer' && <button onClick={() => addToCart(b)}>Add to Cart</button>}
+            </div>
           </li>
         ))}
       </ul>
     </div>
   );
-};
-
-export default BrowseBooks;
+}

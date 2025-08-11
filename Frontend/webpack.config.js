@@ -1,33 +1,45 @@
+// Frontend/webpack.config.js
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
-module.exports = {
-  entry: './src/index.js', // Entry point for the application
-  output: {
-    path: path.resolve(__dirname, 'public'), // Output directory for bundled files
-    filename: 'bundle.js', // Output bundle file name
-    publicPath: '/', // Public URL of the output directory when referenced in a browser
-  },
-  mode: 'development', // Set mode to development for easier debugging
-  devServer: {
-    static: './public', // Serve static files from the dist directory
-    historyApiFallback: true, // Redirect 404s to index.html for React Router
-  },
-  module: {
-    rules: [
-      {
-        test: /\.jsx?$/, // Transpile .js and .jsx files
-        exclude: /node_modules/, // Exclude node_modules from transpilation
-        use: {
-          loader: 'babel-loader', // Use Babel to transpile
+module.exports = (env, argv) => {
+  const isProd = argv.mode === 'production';
+  return {
+    entry: './src/index.js',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'bundle.[contenthash].js',
+      clean: true,
+      publicPath: '/',
+    },
+    module: {
+      rules: [
+        { test: /\.jsx?$/, exclude: /node_modules/, use: 'babel-loader' },
+        { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+      ],
+    },
+    resolve: { extensions: ['.js', '.jsx'] },
+    devtool: isProd ? 'source-map' : 'eval-cheap-module-source-map',
+    devServer: {
+      static: path.join(__dirname, 'public'),
+      historyApiFallback: true,
+      port: 3000,
+      proxy: [
+        {
+          context: ['/api'],
+          target: 'http://localhost:5000',
+          changeOrigin: true,
         },
-      },
-      {
-        test: /\.css$/, // Handle CSS files
-        use: ['style-loader', 'css-loader'], // Use style-loader and css-loader
-      },
+      ],
+      open: true,
+    },
+    plugins: [
+      new HtmlWebpackPlugin({ template: './public/index.html' }),
+      new webpack.DefinePlugin({
+        'process.env.API_URL': JSON.stringify(process.env.API_URL || ''),
+      }),
     ],
-  },
-  resolve: {
-    extensions: ['.js', '.jsx'], // Resolve these extensions
-  },
+    performance: { hints: false },
+  };
 };

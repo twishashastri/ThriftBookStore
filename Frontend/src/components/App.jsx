@@ -1,34 +1,66 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-
+import { Route, Routes } from 'react-router-dom';
+import Navbar from './Navbar';
 import HomePage from './HomePage';
+import BrowseBooks from './BrowseBooks';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
-import BrowseBooks from './BrowseBooks';
-import AddEditBook from './AddEditBook';
 import Cart from './Cart';
-import BuyerDashboard from './BuyerDashboard';
 import SellerDashboard from './SellerDashboard';
+import BuyerDashboard from './BuyerDashboard';
 import AdminDashboard from './AdminDashboard';
-import Navbar from './Navbar'; 
+import ProtectedRoute from './ProtectedRoute';
+import AuthProvider from './AuthContext';
 
-const App = () => {
+export default function App() {
   return (
-    <div>
+    <AuthProvider>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/browse" element={<BrowseBooks />} />
-        <Route path="/add-edit-book" element={<AddEditBook />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
-        <Route path="/seller-dashboard" element={<SellerDashboard />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      </Routes>
-    </div>
-  );
-};
+      <div className="container">
+        <Routes>
+          {/* Home as default */}
+          <Route path="/" element={<HomePage />} />
 
-export default App;
+          {/* Public pages */}
+          <Route path="/browse" element={<BrowseBooks />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Protected pages */}
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute roles={['buyer', 'admin']}>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/seller"
+            element={
+              <ProtectedRoute roles={['seller', 'admin']}>
+                <SellerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer"
+            element={
+              <ProtectedRoute roles={['buyer', 'admin']}>
+                <BuyerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </div>
+    </AuthProvider>
+  );
+}

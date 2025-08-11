@@ -1,77 +1,54 @@
-const express = require('express');
+const router = require('express').Router();
 const Book = require('../models/Book');
-const authMiddleware = require('../middleware/authMiddleware.js');
+const { protect, restrictTo } = require('../middleware/auth');
 
-const router = express.Router();
-
-// Get all books (public)
+// Public: list & search
 router.get('/', async (req, res) => {
-  try {
-    const books = await Book.find().populate('seller', 'username email');
-    res.json(books);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to load books' });
-  }
+  const { q, genre, min, max, sort = '-createdAt' } = req.query;
+  const filter = { isActive: true };
+  if (q) filter.$or = [{ title: new RegExp(q, 'i') }, { author: new RegExp(q, 'i') }];
+  if (genre) filter.genre = genre;
+  if (min || max) filter.price = { ...(min && { $gte: +min }), ...(max && { $lte: +max }) };
+  const books = await Book.find(filter).sort(sort).populate('seller', 'name');
+  res.json(books);
 });
 
-// Create a book listing (protected; seller only)
-router.post('/', authMiddleware, async (req, res) => {
+// Seller: create
+router.post('/', protect, restrictTo('seller', 'admin'), async (req, res) => {
   try {
-    if (req.user.role !== 'seller') return res.status(403).json({ message: 'Access denied' });
-
-    const { title, author, price, description, condition, imageUrl } = req.body;
-
-    const book = new Book({
-      title,
-      author,
-      price,
-      description,
-      condition,
-      imageUrl,
-      seller: req.user.id,
-    });
-
-    await book.save();
-
+    const payload = { ...req.body, seller: req.user._id };
+    const book = await Book.create(payload);
     res.status(201).json(book);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to create book' });
+  } catch (e) {
+    res.status(400).json({ message: e.message });
   }
 });
 
-// Update book listing (protected; seller only)
-router.put('/:id', authMiddleware, async (req, res) => {
-  try {
-    const book = await Book.findById(req.params.id);
-
-    if (!book) return res.status(404).json({ message: 'Book not found' });
-    if (book.seller.toString() !== req.user.id) return res.status(403).json({ message: 'Access denied' });
-
-    Object.assign(book, req.body);
-
-    await book.save();
-
-    res.json(book);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to update book' });
-  }
+// Seller: update own book
+router.put('/:id', protect, restrictTo('seller', 'admin'), async (req, res) => {
+  const book = await Book.findById(req.params.id);
+  if (!book) return res.status(404).json({ message: 'Not found' });
+  if (req.user.role !== 'admin' && String(book.seller) !== String(req.user._id))
+    return res.status(403).json({ message: 'Not allowed' });
+  Object.assign(book, req.body);
+  await book.save();
+  res.json(book);
 });
 
-// Delete book listing (protected; seller only)
-router.delete('/:id', authMiddleware, async (req, res) => {
-  try {
-    const book = await Book.findById(req.params.id);
+// Seller/Admin: delete
+router.delete('/:id', protect, restrictTo('seller', 'admin'), async (req, res) => {
+  const book = await Book.findById(req.params.id);
+  if (!book) return res.status(404).json({ message: 'Not found' });
+  if (req.user.role !== 'admin' && String(book.seller) !== String(req.user._id))
+    return res.status(403).json({ message: 'Not allowed' });
+  await book.deleteOne();
+  res.json({ message: 'Deleted' });
+});
 
-    if (!book) return res.status(404).json({ message: 'Book not found' });
-    if (book.seller.toString() !== req.user.id) return res.status(403).json({ message: 'Access denied' });
-
-    await book.remove();
-
-    res.json({ message: 'Book deleted' });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to delete book' });
-  }
+// Seller: my listings
+router.get('/me/listings', protect, restrictTo('seller', 'admin'), async (req, res) => {
+  const books = await Book.find({ seller: req.user._id });
+  res.json(books);
 });
 
 module.exports = router;
-

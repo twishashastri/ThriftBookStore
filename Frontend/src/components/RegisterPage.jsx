@@ -1,135 +1,112 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
-const RegisterPage = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('buyer');
+export default function RegisterPage() {
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'buyer' });
+  const [showPass, setShowPass] = useState(false);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
+  const nav = useNavigate();
 
-  const handleRegister = async (e) => {
+  useEffect(() => { setForm({ name: '', email: '', password: '', role: 'buyer' }); }, []);
+
+  const validate = () => {
+    if (!form.name.trim()) return 'Please enter your full name.';
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) return 'Please enter a valid email.';
+    if (form.password.length < 6) return 'Password must be at least 6 characters.';
+    return '';
+  };
+
+  const onSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post('/api/auth/register', { username, email, password, role });
-      alert('🎉 Registration successful!');
-      window.location.href = '/login';
-    } catch (error) {
-      console.error('Registration error:', error.response?.data || error.message);
-      alert(`Registration failed: ${error.response?.data?.message || 'Unknown error'}`);
-    }
+    const v = validate(); if (v) return setErr(v);
+    setErr(''); setLoading(true);
+    const res = await register(form);
+    setLoading(false);
+    if (!res.ok) return setErr(res.error);
+    alert(res.message || 'Registration successful! Please log in.');
+    nav('/login');
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.heading}>Create Account</h2>
-        <p style={styles.subheading}>Register to get started</p>
-        <form onSubmit={handleRegister} style={styles.form}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            required
-            onChange={(e) => setUsername(e.target.value)}
-            style={styles.input}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            required
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.input}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
-          />
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            required
-            style={styles.input}
-          >
-            <option value="buyer">Customer</option>
-            <option value="seller">Seller</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button type="submit" style={styles.button}>
-            Register
+    <section className="auth">
+      <div className="auth__panel">
+        <header className="auth__head">
+          <h1>Create your account</h1>
+          <p>Sell and discover pre-loved books with confidence.</p>
+        </header>
+
+        <form onSubmit={onSubmit} className="auth__form" autoComplete="off">
+          <div className="auth__field">
+            <label>Full name</label>
+            <input
+              placeholder="e.g., Shreya Patel"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+
+          <div className="auth__field">
+            <label>Email</label>
+            <input
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              inputMode="email"
+            />
+          </div>
+
+          <div className="auth__field auth__field--password">
+            <label>Password</label>
+            <input
+              type={showPass ? 'text' : 'password'}
+              placeholder="Minimum 6 characters"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className="auth__toggle"
+              onClick={() => setShowPass(!showPass)}
+              aria-label={showPass ? 'Hide password' : 'Show password'}
+            >
+              {showPass ? 'Hide' : 'Show'}
+            </button>
+          </div>
+
+          <div className="auth__field">
+            <label>Role</label>
+            <select
+              value={form.role}
+              onChange={(e) => setForm({ ...form, role: e.target.value })}
+            >
+              <option value="buyer">Buyer</option>
+              <option value="seller">Seller</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          {err && <div className="auth__error">{err}</div>}
+
+          <button className="btn btn--primary auth__submit" disabled={loading}>
+            {loading ? 'Creating…' : 'Create Account'}
           </button>
+
+          <p className="auth__hint">
+            Already have an account? <Link to="/login">Log in</Link>
+          </p>
         </form>
-        <p style={styles.footerText}>
-          Already have an account?{' '}
-          <a href="/login" style={styles.link}>Login</a>
-        </p>
       </div>
-    </div>
+
+      <aside className="auth__aside" aria-hidden="true">
+        <div className="auth__aside-inner">
+          <h3>ThriftBookStore</h3>
+          <p>Quality books. Smarter prices.</p>
+        </div>
+      </aside>
+    </section>
   );
-};
-
-const styles = {
-  container: {
-    height: '90vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#f2f4f8',
-  },
-  card: {
-    backgroundColor: '#fff',
-    padding: '40px',
-    borderRadius: '12px',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-    width: '100%',
-    maxWidth: '400px',
-    textAlign: 'center',
-  },
-  heading: {
-    marginBottom: '10px',
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#333',
-  },
-  subheading: {
-    marginBottom: '30px',
-    color: '#666',
-    fontSize: '14px',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px',
-  },
-  input: {
-    padding: '12px',
-    fontSize: '16px',
-    border: '1px solid #ccc',
-    borderRadius: '6px',
-  },
-  button: {
-    backgroundColor: '#4caf50',
-    color: '#fff',
-    padding: '12px',
-    fontSize: '16px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-  },
-  footerText: {
-    marginTop: '20px',
-    fontSize: '14px',
-    color: '#555',
-  },
-  link: {
-    color: '#4a90e2',
-    textDecoration: 'none',
-    fontWeight: '500',
-  },
-};
-
-export default RegisterPage;
+}

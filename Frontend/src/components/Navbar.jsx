@@ -1,16 +1,28 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
-const Navbar = () => {
+export default function Navbar() {
+  const { user, logout } = useAuth();
+  const nav = useNavigate();
+
   return (
-    <nav style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
-      <h2 style={{ display: 'inline', marginRight: '2rem' }}>ThriftBookStore</h2>
-      <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>
-      <Link to="/browse" style={{ marginRight: '1rem' }}>Browse</Link>
-      <Link to="/login" style={{ marginRight: '1rem' }}>Login</Link>
-      <Link to="/register">Register</Link>
+    <nav className="nav container">
+      <Link to="/">ThriftBookStore</Link>
+      <div className="spacer" />
+      <Link to="/browse">Browse</Link>
+      {user?.role === 'buyer' && <Link to="/cart">Cart</Link>}
+      {user?.role === 'seller' && <Link to="/seller">Seller</Link>}
+      {user?.role === 'admin' && <Link to="/admin">Admin</Link>}
+
+      {!user ? (
+        <>
+          <Link to="/login">Login</Link>
+          <Link to="/register">Register</Link>
+        </>
+      ) : (
+        <button onClick={() => { logout(); nav('/'); }}>Logout</button>
+      )}
     </nav>
   );
-};
-
-export default Navbar;
+}

@@ -1,27 +1,18 @@
-const mongoose = require('mongoose');
+const { Schema, model, Types } = require('mongoose');
 
-// Schema for order tracking purchases
-const orderSchema = new mongoose.Schema({
-  buyer: {             // User who placed the order
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  books: [             // Array of books and quantities
-    {
-      book: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Book',
+const orderSchema = new Schema(
+  {
+    buyer: { type: Types.ObjectId, ref: 'User', required: true },
+    items: [
+      {
+        book: { type: Types.ObjectId, ref: 'Book', required: true },
+        price: { type: Number, required: true },
+        seller: { type: Types.ObjectId, ref: 'User', required: true },
       },
-      quantity: { type: Number, default: 1 },
-    }
-  ],
-  totalAmount: { type: Number, required: true }, // Total price for the order
-  status: {                                       // Order status
-    type: String,
-    enum: ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
-    default: 'Pending',
+    ],
+    status: { type: String, enum: ['placed', 'shipped', 'completed', 'cancelled'], default: 'placed' },
   },
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Order', orderSchema);
+module.exports = model('Order', orderSchema);
