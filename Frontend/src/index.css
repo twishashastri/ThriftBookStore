@@ -157,17 +157,69 @@ input:focus, select:focus {
 
 /* LAYOUT */
 /* Navigation */
+/* Navbar.css */
 .nav {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 0; border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; backdrop-filter: saturate(140%) blur(4px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  backdrop-filter: saturate(140%) blur(4px);
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   z-index: 10;
 }
-.nav .spacer { flex: 1; }
-.nav a { text-decoration: none; color: var(--text); padding: 8px 10px; border-radius: 10px; }
-.nav a:hover { background: color-mix(in srgb, var(--primary) 10%, var(--card) 90%); }
-.nav .brand { font-weight: 800; letter-spacing: 0.2px; }
+
+.spacer {
+  flex: 1;
+}
+
+.nav a {
+  text-decoration: none;
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.nav a:hover {
+  background: color-mix(in srgb, var(--primary) 10%, var(--card) 90%);
+}
+
+/* Brand/logo styles */
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo {
+  height: 60px;
+  width: 60px;
+  object-fit: contain;
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: purple;
+  letter-spacing: 0.2px;
+}
+
+.logout-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: var(--primary);
+  color: white;
+  font-weight: bold;
+}
+
+.logout-btn:hover {
+  opacity: 0.9;
+}
 
 /* 
    PAGES – HOME

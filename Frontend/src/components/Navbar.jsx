@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import '../index.css'; 
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -8,8 +9,13 @@ export default function Navbar() {
 
   return (
     <nav className="nav container">
-      <Link to="/">ThriftBookStore</Link>
+      <Link to="/" className="brand-link">
+        <img src="/logo.png" alt="Logo" className="logo" />
+        <span className="brand">ThriftBookStore</span>
+      </Link>
+
       <div className="spacer" />
+
       <Link to="/browse">Browse</Link>
       {user?.role === 'buyer' && <Link to="/cart">Cart</Link>}
       {user?.role === 'seller' && <Link to="/seller">Seller</Link>}
@@ -21,7 +27,9 @@ export default function Navbar() {
           <Link to="/register">Register</Link>
         </>
       ) : (
-        <button onClick={() => { logout(); nav('/'); }}>Logout</button>
+        <button onClick={() => { logout(); nav('/'); }} className="logout-btn">
+          Logout
+        </button>
       )}
     </nav>
   );
