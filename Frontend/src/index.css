@@ -157,68 +157,74 @@ input:focus, select:focus {
 
 /* LAYOUT */
 /* Navigation */
-/* Navbar.css */
+/* Navbar Container */
 .nav {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 0;
+  padding: 14px 30px;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  backdrop-filter: saturate(140%) blur(4px);
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
-  z-index: 10;
+  backdrop-filter: saturate(140%) blur(6px);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  z-index: 100;
 }
 
-.spacer {
-  flex: 1;
-}
-
-.nav a {
-  text-decoration: none;
-  color: var(--text);
-  padding: 8px 10px;
-  border-radius: 10px;
-}
-
-.nav a:hover {
-  background: color-mix(in srgb, var(--primary) 10%, var(--card) 90%);
-}
-
-/* Brand/logo styles */
+/* Brand / Logo */
 .brand-link {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   text-decoration: none;
 }
 
 .logo {
-  height: 60px;
-  width: 60px;
+  height: 50px;
+  width: 50px;
   object-fit: contain;
 }
 
 .brand {
   font-weight: 800;
   font-size: 1.6rem;
-  color: purple;
+  color: rgb(174, 67, 250);
   letter-spacing: 0.2px;
 }
 
+/* Spacer for flex layout */
+.spacer {
+  flex: 1;
+}
+
+/* Navigation Links */
+.nav a {
+  text-decoration: none;
+  color: rgb(174, 67, 250);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav a:hover {
+  background: color-mix(in srgb, var(--primary) 15%, var(--card) 85%);
+}
+
+/* Logout Button */
 .logout-btn {
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  background: var(--primary);
-  color: white;
   font-weight: bold;
+  color: white;
+  background: var(--primary);
+  transition: all 0.2s ease;
 }
 
 .logout-btn:hover {
   opacity: 0.9;
+  background: color-mix(in srgb, var(--primary) 80%, var(--card) 20%);
 }
 
 /* 
@@ -232,7 +238,7 @@ input:focus, select:focus {
   background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, #ffffff 92%), var(--bg));
   border: 1px solid var(--border); border-radius: 20px; padding: 28px; box-shadow: var(--shadow);
 }
-.hero__content h1 { font-size: 38px; line-height: 1.2; margin: 0 0 10px; }
+.hero__content h1 { font-size: 30px; line-height: 1.2; margin: 0 0 10px; }
 .hero__subtitle { color: var(--muted); margin: 0 0 16px; }
 .hero__cta { display: flex; gap: 10px; margin-bottom: 8px; }
 .hero__meta { display: flex; gap: 10px; color: var(--muted); font-size: 14px; }
