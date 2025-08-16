@@ -56,8 +56,7 @@ export default function HomePage() {
         <h2>Browse by Category</h2>
         <div className="categories__grid">
           {[
-            'Fiction', 'Non-Fiction', 'Science', 'Business',
-            'Technology', 'Children', 'Biographies', 'Textbooks'
+            'Fiction', 'Non-Fiction', 'Fantasy', 'Sci-Fi', 'Romance', 'NoteBooks'
           ].map((c) => (
             <Link key={c} to={`/browse?q=${encodeURIComponent(c)}`} className="chip">
               {c}
@@ -70,7 +69,7 @@ export default function HomePage() {
       <section className="highlights">
         <div className="highlight__card">
           <img
-            src="https://picsum.photos/seed/books1/480/320"
+            src="https://fastly.picsum.photos/id/832/5000/3333.jpg?hmac=hFHyNp_cIcOMyxpCcTWRd_UM1QEHUyxu4PYl1l7c_fk"
             alt="Assorted used books stacked"
             loading="lazy"
           />
@@ -83,7 +82,7 @@ export default function HomePage() {
 
         <div className="highlight__card">
           <img
-            src="https://picsum.photos/seed/books2/480/320"
+            src="https://fastly.picsum.photos/id/20/3670/2462.jpg?hmac=CmQ0ln-k5ZqkdtLvVO23LjVAEabZQx2wOaT4pyeG10I"
             alt="Student reading with coffee"
             loading="lazy"
           />

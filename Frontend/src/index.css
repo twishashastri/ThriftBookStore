@@ -249,7 +249,7 @@ input:focus, select:focus {
 }
 .hero__card--1 { transform: rotate(-6deg) translate(-18px, -10px); background-image: url('https://picsum.photos/seed/paper1/700/460'); }
 .hero__card--2 { transform: rotate(4deg) translate(10px, 8px); background-image: url('https://picsum.photos/seed/paper2/700/460'); opacity: .95; }
-.hero__card--3 { transform: rotate(-1deg) translate(6px, 22px); background-image: url('https://picsum.photos/seed/paper3/700/460'); opacity: .9; }
+.hero__card--3 { transform: rotate(-1deg) translate(6px, 22px); background-image: url('https://fastly.picsum.photos/id/24/4855/1803.jpg?hmac=ICVhP1pUXDLXaTkgwDJinSUS59UWalMxf4SOIWb9Ui4'); opacity: .9; }
 
 /* Features */
 .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
