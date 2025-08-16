@@ -551,3 +551,56 @@ ul > li.card > button:active { transform: translateY(1px); }
   font-weight: 700;
 }
 
+/* Filters toolbar - consistent height */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+  align-items: center; 
+}
+
+.filters input,
+.filters select {
+  padding: 10px 14px;
+  height: 44px;           
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 14px;
+  flex: 1;                 
+  min-width: 120px;       
+}
+
+.filters input:focus,
+.filters select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.filters button {
+  padding: 0 16px;
+  height: 44px;            /* match input height */
+  border-radius: 12px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.06s ease, background 0.2s;
+  flex-shrink: 0;          /* don't shrink */
+}
+
+.filters button:hover {
+  background: var(--primary-600);
+}
+
+.filters button:active {
+  transform: translateY(1px);
+}
+
+
+

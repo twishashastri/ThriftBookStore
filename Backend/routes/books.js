@@ -4,14 +4,47 @@ const { protect, restrictTo } = require('../middleware/auth');
 
 // Public: list & search
 router.get('/', async (req, res) => {
-  const { q, genre, min, max, sort = '-createdAt' } = req.query;
-  const filter = { isActive: true };
-  if (q) filter.$or = [{ title: new RegExp(q, 'i') }, { author: new RegExp(q, 'i') }];
-  if (genre) filter.genre = genre;
-  if (min || max) filter.price = { ...(min && { $gte: +min }), ...(max && { $lte: +max }) };
-  const books = await Book.find(filter).sort(sort).populate('seller', 'name');
-  res.json(books);
+  try {
+    const { q, genre, condition, minPrice, maxPrice, sortBy } = req.query;
+    const filter = { isActive: true };
+
+    // Search by title/author
+    if (q) {
+      filter.$or = [
+        { title: new RegExp(q, 'i') },
+        { author: new RegExp(q, 'i') }
+      ];
+    }
+
+    // Genre filter
+    if (genre) filter.genre = genre;
+
+    // Condition filter
+    if (condition) filter.condition = condition;
+
+    // Price filter
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    // Sorting
+    let sort = { createdAt: -1 }; // default newest
+    if (sortBy === 'priceAsc') sort = { price: 1 };
+    if (sortBy === 'priceDesc') sort = { price: -1 };
+    if (sortBy === 'newest') sort = { createdAt: -1 };
+    if (sortBy === 'oldest') sort = { createdAt: 1 };
+
+    const books = await Book.find(filter).sort(sort).populate('seller', 'name');
+    res.json(books);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
 });
+
+
 
 // Seller: create
 router.post('/', protect, restrictTo('seller', 'admin'), async (req, res) => {

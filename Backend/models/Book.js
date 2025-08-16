@@ -6,8 +6,16 @@ const bookSchema = new Schema(
     author: { type: String, required: true, trim: true },
     description: { type: String, default: '' },
     price: { type: Number, required: true, min: 0 },
-    condition: { type: String, enum: ['new', 'like new', 'good', 'fair'], default: 'good' },
-    genre: { type: String, default: 'General' },
+    condition: {
+      type: String,
+      enum: ['new', 'like new', 'good', 'fair'],
+      default: 'good'
+    },
+    genre: {
+      type: String,
+      enum: ['Fiction', 'Non-fiction', 'Fantasy', 'Sci-Fi', 'Romance', 'General'], 
+      default: 'General'
+    },
     imageUrl: { type: String, default: '' },
     seller: { type: Types.ObjectId, ref: 'User', required: true },
     isActive: { type: Boolean, default: true },
