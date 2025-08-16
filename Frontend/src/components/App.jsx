@@ -6,6 +6,7 @@ import BrowseBooks from './BrowseBooks';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
 import Cart from './Cart';
+import Checkout from './Checkout'; 
 import SellerDashboard from './SellerDashboard';
 import BuyerDashboard from './BuyerDashboard';
 import AdminDashboard from './AdminDashboard';
@@ -32,6 +33,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={['buyer', 'admin']}>
                 <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"   // ← ADD THIS ROUTE
+            element={
+              <ProtectedRoute roles={['buyer', 'admin']}>
+                <Checkout />
               </ProtectedRoute>
             }
           />

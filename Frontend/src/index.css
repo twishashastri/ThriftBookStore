@@ -134,8 +134,8 @@ input:focus, select:focus {
 .badge--danger  { color: #991b1b; background: #fef2f2; border-color: #fecaca; }
 
 /* Tables */
-.table-wrap { width: 100%; overflow-x: auto; }
-.table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.table-wrap { overflow-x: auto; margin-top: 12px;}
+.table { width: 100%; border-collapse: collapse; border-spacing: 0; }
 .table thead th {
   text-align: left; font-weight: 700; font-size: 14px;
   padding: 12px 14px; color: var(--muted);
@@ -601,6 +601,3 @@ ul > li.card > button:active { transform: translateY(1px); }
 .filters button:active {
   transform: translateY(1px);
 }
-
-
-

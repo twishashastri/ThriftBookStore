@@ -12,36 +12,43 @@ export default function BuyerDashboard() {
     () => new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }),
     []
   );
+
   const dateStr = (d) => new Date(d).toLocaleString();
 
   useEffect(() => {
-    // show a one-time success message if we just placed an order
     if (sessionStorage.getItem('justOrdered')) {
-      setFlash('Order placed successfully !!');
+      setFlash('Order placed successfully!');
       sessionStorage.removeItem('justOrdered');
     }
 
-    (async () => {
+    const fetchOrders = async () => {
       try {
-        setErr(''); setLoading(true);
-        let res;
-        try { res = await api.get('/orders/me'); }
-        catch { res = await api.get('/orders'); }
+        setErr('');
+        setLoading(true);
+
+        let res = await api.get('/orders/me');
         const data = Array.isArray(res.data) ? res.data : [];
+
+        // Sort by date
         data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setOrders(data);
+
+        // Remove duplicates
+        const uniqueOrders = Array.from(new Map(data.map(o => [o._id, o])).values());
+        setOrders(uniqueOrders);
       } catch (e) {
         setErr(e?.response?.data?.message || 'Failed to load orders.');
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    fetchOrders();
   }, []);
 
-  const totalOf = (o) =>
-    typeof o.total === 'number'
-      ? o.total
-      : (o.items || []).reduce((sum, it) => {
+  const totalOf = (order) =>
+    typeof order.total === 'number'
+      ? order.total
+      : (order.items || []).reduce((sum, it) => {
           const price = Number(it.price ?? it.book?.price ?? 0);
           const qty = Number(it.qty ?? 1);
           return sum + price * qty;
@@ -49,77 +56,138 @@ export default function BuyerDashboard() {
 
   if (loading) {
     return (
-      <div className="container page--orders">
-        <div className="card">Loading orders…</div>
+      <div style={{ maxWidth: 900, margin: '20px auto', padding: 20 }}>
+        <div style={{
+          padding: 20,
+          border: '1px solid #ddd',
+          borderRadius: 8,
+          backgroundColor: '#fff'
+        }}>
+          Loading orders…
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container page--orders">
+    <div style={{ maxWidth: 900, margin: '20px auto', padding: 20 }}>
       <h2>My Orders</h2>
 
-      {flash && <div className="flash flash--success">{flash}</div>}
-      {err && <div className="error" style={{ marginBottom: 12 }}>{err}</div>}
+      {flash && (
+        <div style={{
+          padding: 10,
+          marginBottom: 15,
+          borderRadius: 5,
+          backgroundColor: '#d4edda',
+          color: '#155724',
+          fontWeight: 'bold'
+        }}>
+          {flash}
+        </div>
+      )}
+
+      {err && (
+        <div style={{
+          padding: 10,
+          marginBottom: 15,
+          borderRadius: 5,
+          backgroundColor: '#f8d7da',
+          color: '#721c24',
+          fontWeight: 'bold'
+        }}>
+          {err}
+        </div>
+      )}
 
       {!orders.length ? (
-        <div className="card empty">
+        <div style={{
+          padding: 20,
+          border: '1px solid #ddd',
+          borderRadius: 8,
+          backgroundColor: '#fff',
+          textAlign: 'center'
+        }}>
           You don’t have any orders yet.{' '}
-          <Link to="/browse" className="btn btn--link">Browse books →</Link>
+          <Link to="/browse" style={{
+            color: '#007bff',
+            textDecoration: 'none',
+            fontWeight: 'bold'
+          }}>
+            Browse books →
+          </Link>
         </div>
       ) : (
-        <ul className="orders">
+        <ul style={{ padding: 0, listStyle: 'none' }}>
           {orders.map((o) => (
-            <li key={o._id} className="card">
-              {/* Header */}
-              <div>
+            <li key={o._id} style={{
+              marginBottom: 20,
+              padding: 15,
+              border: '1px solid #ddd',
+              borderRadius: 8,
+              backgroundColor: '#fff'
+            }}>
+              {/* Order Header */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                marginBottom: 15
+              }}>
                 <div>
                   <strong>Order #{String(o._id).slice(-6).toUpperCase()}</strong>
-                  <span className="muted"> • {dateStr(o.createdAt)}</span>
+                  <span style={{ marginLeft: 10, color: '#666' }}>
+                    • {dateStr(o.createdAt)}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span
-                    className={`badge ${
-                      o.status === 'paid' ? 'badge--success'
-                      : o.status === 'pending' ? 'badge--warn'
-                      : 'badge--danger'
-                    }`}
-                  >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 5 }}>
+                  <span style={{
+                    padding: '4px 10px',
+                    borderRadius: 12,
+                    fontWeight: 'bold',
+                    backgroundColor: o.status === 'paid' ? '#d4edda'
+                      : o.status === 'pending' ? '#fff3cd' : '#f8d7da',
+                    color: o.status === 'paid' ? '#155724'
+                      : o.status === 'pending' ? '#856404' : '#721c24'
+                  }}>
                     {o.status || 'pending'}
                   </span>
-                  <strong style={{ fontSize: 18 }}>{money.format(totalOf(o))}</strong>
+                  <strong>{money.format(totalOf(o))}</strong>
                 </div>
               </div>
 
-              {/* Items */}
-              <div className="table-wrap">
-                <table className="table">
+              {/* Table */}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Qty</th>
-                      <th>Price</th>
-                      <th>Line total</th>
+                    <tr style={{ borderBottom: '1px solid #eee', textAlign: 'left' }}>
+                      <th style={{ padding: 10 }}>Item</th>
+                      <th style={{ padding: 10 }}>Qty</th>
+                      <th style={{ padding: 10, textAlign: 'right' }}>Price</th>
+                      <th style={{ padding: 10, textAlign: 'right' }}>Line total</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {(o.items || []).map((it, idx) => {
+                    {(o.items && o.items.length > 0) ? o.items.map((it, idx) => {
                       const price = Number(it.price ?? it.book?.price ?? 0);
                       const qty = Number(it.qty ?? 1);
                       return (
-                        <tr key={idx}>
-                          <td>
+                        <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: 10 }}>
                             <strong>{it.book?.title || 'Book'}</strong>
-                            <div className="muted" style={{ fontSize: 12 }}>
+                            <div style={{ fontSize: 12, color: '#666' }}>
                               {it.book?.author} {it.book?.condition ? `• ${it.book.condition}` : ''}
                             </div>
                           </td>
-                          <td>{qty}</td>
-                          <td style={{ textAlign: 'right' }}>{money.format(price)}</td>
-                          <td style={{ textAlign: 'right' }}>{money.format(price * qty)}</td>
+                          <td style={{ padding: 10 }}>{qty}</td>
+                          <td style={{ padding: 10, textAlign: 'right' }}>{money.format(price)}</td>
+                          <td style={{ padding: 10, textAlign: 'right' }}>{money.format(price * qty)}</td>
                         </tr>
                       );
-                    })}
+                    }) : (
+                      <tr>
+                        <td colSpan="4" style={{ textAlign: 'center', padding: 10 }}>No items in this order.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

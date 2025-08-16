@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from './api';
 
-const TAX_RATE = 0.13; // adjust if you need
+const TAX_RATE = 0.13; 
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -33,39 +32,19 @@ export default function Cart() {
   const tax = +(subtotal * TAX_RATE).toFixed(2);
   const total = subtotal + tax;
 
-  const placeOrder = async () => {
-    if (!items.length) return;
-    try {
-      const payload = { items: items.map(i => ({ bookId: i.bookId, qty: i.qty })) };
-      await api.post('/orders', payload);
-
-      // clear cart
-      localStorage.removeItem('cart');
-      setItems([]);
-
-      // flash message and go to Orders
-      sessionStorage.setItem('justOrdered', '1');
-      navigate('/buyer');
-    } catch (e) {
-      alert(e?.response?.data?.message || 'Failed to place order.');
-    }
-  };
-
   return (
     <div className="container page--cart">
       <h2>Cart</h2>
 
-      {/* NEW: small toolbar for quick actions */}
+      {/* Toolbar */}
       <div style={{ display: 'flex', gap: 8, margin: '6px 0 12px' }}>
         <button className="btn" onClick={() => navigate('/browse')}>Continue Browsing</button>
         <button className="btn btn--ghost" onClick={() => navigate('/buyer')}>View Orders</button>
       </div>
 
-      {/* List */}
       {!items.length ? (
         <div className="card empty">
           No items.{' '}
-          {/* NEW: quick jump to orders even when cart is empty */}
           <button className="btn btn--link" onClick={() => navigate('/buyer')}>Go to Orders →</button>
         </div>
       ) : (
@@ -117,8 +96,8 @@ export default function Cart() {
               <span>Total</span><br />
               <strong>{money.format(total)}</strong>
             </div>
-            <button className="btn btn--primary" onClick={placeOrder}>
-              Place Order
+            <button className="btn btn--primary" onClick={() => navigate('/checkout')}>
+              Proceed to Checkout
             </button>
           </div>
         </>
